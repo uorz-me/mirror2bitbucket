@@ -30,15 +30,5 @@ curl "${CURL_OPTS[@]}" "https://api.bitbucket.org/2.0/repositories/$username/$re
     curl -X POST --fail "${CURL_OPTS[@]}" "https://api.bitbucket.org/2.0/repositories/$username/$reponame" -H "Content-Type: application/json" -d '{"scm": "git", "is_private": "true"}' > /dev/null
 )
 
-
-#remote=$(echo $remote | tr '[:upper:]' '[:lower:]')
-#
-#echo "Checking for remote \"$remote\"..."
-#git remote get-url "$remote" &> /dev/null || (
-#    echo "Repository has no remote \"$remote\", creating it..."
-#    git remote add "$remote" https://$username@bitbucket.org/$username/$reponame.git
-#)
-
-
 echo "Pushing to remote..."
 git push https://"$username:$password"@bitbucket.org/$username/$reponame.git --all --force
