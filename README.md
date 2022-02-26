@@ -22,13 +22,39 @@ None
 
 
 ## Example usage
+```yaml .github/workflows/mirror-to-bitbucket.yml
+name: Mirror repository
 
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0 # <-- clone with complete history
-      - name: Push
-        uses: ./ # Uses an action in the root directory
-        id: mirror-to-bitbucket
-        with:
-          password: ${{ secrets.BITBUCKET_PASSWORD }}
+on: [push]
+
+jobs:
+  secrets-gate:
+    runs-on: ubuntu-latest
+    outputs:
+      ok: ${{ steps.check-secrets.outputs.ok }}
+    steps:
+    - name: check for secrets exist
+      id: check-secrets
+      run: |
+        if [ ! -z "${{ secrets.BITBUCKET_USERNAME }}" ]; then
+          echo "::set-output name=ok::true"
+        fi
+
+  sync:
+    needs:
+    - secrets-gate
+    if: ${{ needs.secrets-gate.outputs.ok == 'true' }}
+    
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Push
+      uses: uorz-me/mirror2bitbucket@nodocker
+      with:
+        username: ${{ secrets.BITBUCKET_USERNAME }}
+        password: ${{ secrets.BITBUCKET_PASSWORD }}
+```
